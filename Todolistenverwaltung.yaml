@@ -13,30 +13,28 @@ servers:
 tags:
 - name: Listenverwaltung
 paths:
-  /todo-list/{list_id}/entries:
-    get:
+  /todo-list:
+    post:
       tags:
       - Listenverwaltung
-      summary: Liefert alle Einträge einer Todo-Liste zurück.
-      operationId: getListEntries
-      parameters:
-      - name: list_id
-        in: path
-        description: list id
+      summary: Fügt eine neue Todo-Liste hinzu.
+      operationId: addList
+      requestBody:
+        description: list object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoList'
         required: true
-        schema:
-          type: string
       responses:
         200:
-          description: Liste zurükgeliefert
+          description: Liste hinzugefügt
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TodoEntry'
-        404:
-          description: falsche ID
+                $ref: '#/components/schemas/TodoList'
+        400:
+          description: Liste konnte nicht hinzugefügt werden
           content: {}
         405:
           description: falsche Methode verwendet
@@ -44,7 +42,24 @@ paths:
         500:
           description: Fehler im Server
           content: {}
-          
+
+  /todo-lists:
+    get:
+      tags:
+        - Listenverwaltung
+      summary: Liefert alle Todo-Listen zurück
+      operationId: getLists
+      responses:
+        200:
+          description: Listen zurückgeliefert
+          content: { }
+        405:
+          description: falsche Methode verwendet
+          content: { }
+        500:
+          description: Fehler im Server
+          content: { }
+
   /todo-list/{list_id}:
     delete:
       tags:
@@ -87,7 +102,7 @@ paths:
         200:
           description: Listen zurückgeliefert
           content: {}
-        404: 
+        404:
           description: falsche ID
           content: {}
         405:
@@ -96,29 +111,31 @@ paths:
         500:
           description: Fehler im Server
           content: {}
-          
-  /todo-list:
-    post:
+
+  /todo-list/{list_id}/entries:
+    get:
       tags:
       - Listenverwaltung
-      summary: Fügt eine neue Todo-Liste hinzu.
-      operationId: addList
-      requestBody:
-        description: list object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TodoList'
+      summary: Liefert alle Einträge einer Todo-Liste zurück.
+      operationId: getListEntries
+      parameters:
+      - name: list_id
+        in: path
+        description: list id
         required: true
+        schema:
+          type: string
       responses:
         200:
-          description: Liste hinzugefügt
+          description: Liste zurükgeliefert
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TodoList'
-        400:
-          description: Liste konnte nicht hinzugefügt werden
+                type: array
+                items:
+                  $ref: '#/components/schemas/TodoEntry'
+        404:
+          description: falsche ID
           content: {}
         405:
           description: falsche Methode verwendet
@@ -153,6 +170,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TodoEntry'
+        405:
+          description: falsche Methode verwendet
+          content: {}
+        500:
+          description: Fehler im Server
+          content: {}
+
   /todo-list/{list_id}/entry/{entry_id}:
     put:
       tags:
@@ -223,22 +247,6 @@ paths:
           description: Fehler im Server
           content: {}
       x-codegen-request-body-name: body
-  /todo-lists:
-    get:
-      tags:
-      - Listenverwaltung
-      summary: Liefert alle Todo-Listen zurück
-      operationId: getLists
-      responses:
-        200:
-          description: Listen zurückgeliefert
-          content: {}
-        405:
-          description: falsche Methode verwendet
-          content: {}
-        500:
-          description: Fehler im Server
-          content: {}
 
 components:
   schemas:
