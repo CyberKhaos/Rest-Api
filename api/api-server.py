@@ -36,7 +36,7 @@ def create_new_list():
     try:
         data = request.get_json(force=True)
         new_list = TodoList(**data)
-        new_list['id'] = uuid.uuid4()
+        new_list.id = uuid.uuid4()  # Setze die id-Eigenschaft direkt
         todo_list.append(new_list)
         return jsonify(new_list.dict()), 200
     except ValidationError as e:
@@ -46,22 +46,22 @@ def create_new_list():
 @app.route('/todo-lists', methods=['GET'])
 def get_all_todo_lists():
     try:
-        return jsonify([i.dict() for i in todo_list]), 200
+        return jsonify([todo_list_item.dict() for todo_list_item in todo_list]), 200
     except ValidationError as e:
         return jsonify(e.errors()), 400
 
 # Endpoint zum Abrufen oder Löschen einer bestimmten Todo-Liste
 @app.route('/todo-list/<list_id>', methods=['GET', 'DELETE'])
 def handel_list(list_id):
-    list_item = TodoList
+    list_item = None
     for item in todo_list:
-        if item.id == list_id:
+        if str(item.id) == list_id:
             list_item = item
             break
-    if not list_item:
-        return jsonify({"error": "Wrong Id"}), 404
+    if list_item is None:
+        return jsonify({"error": "Falsche Id"}), 404
     if request.method == 'GET':
-        return jsonify([i for i in todo_list if i.id == list_id]), 200
+        return jsonify(list_item.model_dump()), 200
     if request.method == 'DELETE':
         todo_list.remove(list_item)
         return '', 200
@@ -71,12 +71,24 @@ def handel_list(list_id):
 def create_new_entry(list_id):
     try:
         data = request.get_json(force=True)
+        data['list_id'] = list_id  # Setze das list_id-Feld
         new_list_entry = TodoEnty(**data)
-        new_list_entry['id'] = uuid.uuid4()
+        new_list_entry.id = uuid.uuid4()
         todo_entries.append(new_list_entry)
         return jsonify(new_list_entry.dict()), 200
     except ValidationError as e:
         return jsonify(e.errors()), 400
+
+# Endpoint zum Abrufen aller Einträge einer bestimmten Todo-Liste
+@app.route('/todo-list/<list_id>/entries', methods=['GET'])
+def get_all_entries_for_list(list_id):
+    list_entries = []
+    for item in todo_entries:
+        if str(item.list_id) == list_id:
+            list_entries.append(item.dict())  # Konvertiere das Objekt in ein Dictionary
+    if not list_entries:
+        return jsonify({"error": "Falsche Id"}), 404
+    return jsonify(list_entries), 200
 
 # Endpoint zum Aktualisieren oder Löschen eines bestimmten Eintrags in einer Todo-Liste
 @app.route('/todo-list/<list_id>/entry/<entry_id>', methods=['PUT', 'DELETE'])
@@ -84,23 +96,26 @@ def handel_list_entries(list_id, entry_id):
     try:
         entry_item = TodoEnty
         for item in todo_entries:
-            if item.id == entry_id:
+            if str(item.id) == entry_id:
                 entry_item = item
-                break
-        if not entry_item:
-            return jsonify({"error": "Wrong Id"}), 404
+
+        if entry_item is None:
+            return jsonify({"error": "Falsche Id"}), 404
         if request.method == 'PUT':
             data = request.get_json(force=True)
-            updated_entry = TodoEnty(**data)
-            updated_entry['id'] = entry_id
-            todo_entries.append(updated_entry)
-            return jsonify(updated_entry.dict()), 200
+            entry_item.id = entry_id
+            entry_item.name = data['name']
+            entry_item.description = data['description']
+            entry_item.list_id = list_id
+            todo_entries.append(entry_item)
+            return jsonify(entry_item.dict()), 200
+
         if request.method == 'DELETE':
             todo_entries.remove(entry_item)
             return '', 200
+
     except ValidationError as e:
         return jsonify(e.errors()), 400
-
 
 if __name__ == '__main__':
     app.debug = True
