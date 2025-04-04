@@ -112,38 +112,6 @@ paths:
           description: Fehler im Server
           content: {}
 
-  /todo-list/{list_id}/entries:
-    get:
-      tags:
-      - Listenverwaltung
-      summary: Liefert alle Einträge einer Todo-Liste zurück.
-      operationId: getListEntries
-      parameters:
-      - name: list_id
-        in: path
-        description: list id
-        required: true
-        schema:
-          type: string
-      responses:
-        200:
-          description: Liste zurükgeliefert
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TodoEntry'
-        404:
-          description: falsche ID
-          content: {}
-        405:
-          description: falsche Methode verwendet
-          content: {}
-        500:
-          description: Fehler im Server
-          content: {}
-          
   /todo-list/{list_id}/entry:
     post:
       tags:
@@ -177,6 +145,38 @@ paths:
           description: Fehler im Server
           content: {}
 
+  /todo-list/{list_id}/entries:
+    get:
+      tags:
+      - Listenverwaltung
+      summary: Liefert alle Einträge einer Todo-Liste zurück.
+      operationId: getListEntries
+      parameters:
+      - name: list_id
+        in: path
+        description: list id
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Liste zurükgeliefert
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TodoEntry'
+        404:
+          description: falsche ID
+          content: {}
+        405:
+          description: falsche Methode verwendet
+          content: {}
+        500:
+          description: Fehler im Server
+          content: {}
+
   /todo-list/{list_id}/entry/{entry_id}:
     put:
       tags:
@@ -196,7 +196,14 @@ paths:
         required: true
         schema:
           type: string
-      responses: 
+      requestBody:
+        description: entry object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoEntry'
+        required: true
+      responses:
         200:
           description: Eintrag aktualisiert
           content:
@@ -230,7 +237,7 @@ paths:
         required: true
         schema:
           type: string
-      responses: 
+      responses:
         200:
           description: Eintrag aktualisiert
           content:
@@ -246,31 +253,18 @@ paths:
         500:
           description: Fehler im Server
           content: {}
-      x-codegen-request-body-name: body
 
 components:
   schemas:
     TodoList:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
         name:
           type: string
     TodoEntry:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
         name:
           type: string
         description:
           type: string
-        user_id:
-          type: string
-          format: uuid
-        list_id:
-          type: string
-          format: uuid
